@@ -25,20 +25,20 @@ img{ max-width:100%;}
 .top_spac{ margin: 20px 0 0;}
 
 
-.recent_heading {float: left; width:40%;}
+.recent_heading {float: left; width:27%;}
 .srch_bar {
   display: inline-block;
   text-align: right;
-  width: 60%;
+  width: 40%;
 }
-.headind_srch{ padding:10px 29px 10px 20px; overflow:hidden; border-bottom:1px solid #c4c4c4;}
+.headind_srch{ display: flex; flex-wrap: nowrap; padding:10px 15px 10px 15px; overflow:hidden; border-bottom:1px solid #c4c4c4;}
 
 .recent_heading h4 {
   color: #05728f;
   font-size: 21px;
   margin: auto;
 }
-.srch_bar input{ border:1px solid #cdcdcd; border-width:0 0 1px 0; width:80%; padding:2px 0 4px 6px; background:none;}
+.srch_bar input{ border:1px solid #cdcdcd; border-width:0 0 1px 0; width:85%; padding:2px 0 4px 6px; background:none;}
 .srch_bar .input-group-addon button {
   background: rgba(0, 0, 0, 0) none repeat scroll 0 0;
   border: medium none;
@@ -47,6 +47,36 @@ img{ max-width:100%;}
   font-size: 18px;
 }
 .srch_bar .input-group-addon { margin: 0 0 0 -27px;}
+
+/* NEW CHAT BUTTON STYLES */
+
+.headind_srch > .new_chat {
+  width: 30%;
+  position: relative;
+  z-index: 100;
+}
+
+.headind_srch > .new_chat > button {
+  outline: none;
+  border: none;
+  width: 80%;
+  margin-left: 20%;
+  cursor: pointer;
+  border:1px solid #cdcdcd; 
+  border-radius: 5px;
+  border-width:0 0 1px 0;
+}
+
+.headind_srch > .new_chat form {
+  background: #e5e5e5;
+  margin-top: 10px;
+  display: none;
+  padding: 15px;
+  border: 1px solid #05728f;
+  border-radius: 5px;
+  position: fixed;
+  z-index: 5;
+}
 
 .chat_ib h5{ font-size:15px; color:#464646; margin:0 0 8px 0;}
 .chat_ib h5 span{ font-size:13px; float:right;}
@@ -160,6 +190,14 @@ img{ max-width:100%;}
                 <span class="input-group-addon">
                 <button type="button"> <i class="fa fa-search" aria-hidden="true"></i> </button>
                 </span> </div>
+            </div>
+            <div class="new_chat">
+              <button id="new_chat_btn"><i class="fa fa-plus"></i> New Chat</button>
+              <form id="new_chat_form">
+                <label for="email"><strong>Email: </strong></label>
+                <input type="email" placeholder="type your email here">
+                <input type="submit" value="Submit">
+              </form>
             </div>
           </div>
           <div class="inbox_chat">
@@ -280,7 +318,9 @@ img{ max-width:100%;}
             <div class="input_msg_write">
             <form>
               <input type="text" class="message" placeholder="Type a message" />
-              <button class="msg_send_btn" type="button"><i class="fa fa-paper-plane-o" aria-hidden="true"></i><input type="submit"/></button>
+              <button class="msg_send_btn" type="submit">
+                <i class="fa fa-paper-plane-o" aria-hidden="true"></i>
+              </button>
             </form>
             </div>
           
@@ -296,6 +336,14 @@ img{ max-width:100%;}
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js" integrity="sha512-eVL5Lb9al9FzgR63gDs1MxcDS2wFu3loYAgjIH0+Hg38tCS8Ag62dwKyH+wzDb+QauDpEZjXbMn11blw8cbTJQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>    <script type="text/javascript">
+      
+      // THIS FUNCTION SHOULD SCROLL DOWN AUTOMATICALLY
+      let scrollingElement = (document.scrollingElement || document.body)
+      let scrollDown = () => {
+        scrollingElement.scrollTop = scrollingElement.scrollHeight;
+      }
+
+      // YOUR SOCKET CODE
       var socket = io.connect('http://' + document.domain + ':' + location.port);
 
       socket.on( 'connect', function() {
@@ -311,6 +359,7 @@ img{ max-width:100%;}
             user_name : user_name,
             message : user_input
           } )
+          scrollDown();
           $('div.msg_history').append(`
             <div class="outgoing_msg">
               <div class="sent_msg">
@@ -335,6 +384,19 @@ img{ max-width:100%;}
             } })
 
     </script>
-
+    <script>
+      let newChatBtn = document.querySelector('#new_chat_btn');
+      let newChatForm = document.querySelector('#new_chat_form');
+      let Switch = false;
+      newChatBtn.addEventListener("click", () => {
+        if (Switch === false) {
+          newChatForm.style.display = "block";
+          Switch = true;
+        } else {
+          newChatForm.style.display = "none";
+          Switch = false;
+        }
+      })
+    </script>
     </body>
     </html>
