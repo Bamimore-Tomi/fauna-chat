@@ -5,7 +5,7 @@ from flask_socketio import SocketIO
 from faunadb import query as q
 from faunadb.objects import Ref
 from faunadb.client import FaunaClient
-from dotevn import load_dotenv
+from dotenv import load_dotenv
 load_dotenv()
 
 client = FaunaClient(secret=os.getenv("FAUNA_KEY"))
