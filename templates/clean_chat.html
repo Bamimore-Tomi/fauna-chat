@@ -52,7 +52,6 @@ img{ max-width:100%;}
 
 .headind_srch > .new_chat {
   width: 30%;
-  position: relative;
   z-index: 100;
 }
 
@@ -74,9 +73,23 @@ img{ max-width:100%;}
   padding: 15px;
   border: 1px solid #05728f;
   border-radius: 5px;
-  position: fixed;
-  z-index: 5;
+  position: absolute;
+  z-index: 500;
 }
+.headind_srch > .new_chat form[type = "submit"] {
+  cursor: pointer;
+}
+
+#new_chat_overlay {
+    background-color:transparent;
+    position:fixed;
+    top:0;
+    left:0;
+    right:0;
+    bottom:0;
+    display:none;
+}
+
 
 .chat_ib h5{ font-size:15px; color:#464646; margin:0 0 8px 0;}
 .chat_ib h5 span{ font-size:13px; float:right;}
@@ -192,6 +205,7 @@ img{ max-width:100%;}
                 </span> </div>
             </div>
             <div class="new_chat">
+              <div id="new_chat_overlay"></div>
               <button id="new_chat_btn"><i class="fa fa-plus"></i> New Chat</button>
               <form id="new_chat_form">
                 <label for="email"><strong>Email: </strong></label>
@@ -316,7 +330,7 @@ img{ max-width:100%;}
           </div>
           <div class="type_msg">
             <div class="input_msg_write">
-            <form>
+            <form id="chat_form">
               <input type="text" class="message" placeholder="Type a message" />
               <button class="msg_send_btn" type="submit">
                 <i class="fa fa-paper-plane-o" aria-hidden="true"></i>
@@ -338,9 +352,10 @@ img{ max-width:100%;}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js" integrity="sha512-eVL5Lb9al9FzgR63gDs1MxcDS2wFu3loYAgjIH0+Hg38tCS8Ag62dwKyH+wzDb+QauDpEZjXbMn11blw8cbTJQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>    <script type="text/javascript">
       
       // THIS FUNCTION SHOULD SCROLL DOWN AUTOMATICALLY
-      let scrollingElement = (document.scrollingElement || document.body)
+      //let scrollingElement = (document.scrollingElement || document.body)
       let scrollDown = () => {
-        scrollingElement.scrollTop = scrollingElement.scrollHeight;
+        //scrollingElement.scrollTop = scrollingElement.scrollHeight;
+        $container.animate({scrollTop: $container[0].scrollHeight }, "slow");
       }
 
       // YOUR SOCKET CODE
@@ -350,7 +365,7 @@ img{ max-width:100%;}
         socket.emit( 'outgoing', {
           data: 'User Connected'
         } )
-        var form = $( 'form' ).on( 'submit', function( e ) {
+        var form = $( '#chat_form' ).on( 'submit', function( e ) {
           e.preventDefault()
           let user_name = $( 'input.username' ).val()
           let user_input = $( 'input.message' ).val()
@@ -385,18 +400,24 @@ img{ max-width:100%;}
 
     </script>
     <script>
-      let newChatBtn = document.querySelector('#new_chat_btn');
-      let newChatForm = document.querySelector('#new_chat_form');
-      let Switch = false;
-      newChatBtn.addEventListener("click", () => {
-        if (Switch === false) {
-          newChatForm.style.display = "block";
-          Switch = true;
-        } else {
-          newChatForm.style.display = "none";
-          Switch = false;
+      window.onload = function(){
+        let newChatBtn = document.querySelector('#new_chat_btn');
+        let newChatForm = document.querySelector('#new_chat_form');
+        let newChatoverlay = document.querySelector('#new_chat_overlay');
+        newChatBtn.onclick = (e) => {
+          if (e.target === newChatBtn) {
+            newChatForm.style.display = "block";
+            newChatoverlay.style.display = 'block';
+            
+          }     
         }
-      })
-    </script>
+        newChatoverlay.onclick = (e) => {
+          if (e.target === newChatoverlay) {
+            newChatForm.style.display = "none";
+            newChatoverlay.style.display = 'none';
+          } 
+        }
+      }
+   </script>
     </body>
     </html>
