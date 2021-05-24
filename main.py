@@ -1,6 +1,6 @@
 import hashlib,os
 import datetime, pytz
-from flask import Flask, render_template, request, flash, redirect, url_for, session
+from flask import Flask, render_template, request, flash, redirect, url_for, session, Response
 from flask_socketio import SocketIO
 from faunadb import query as q
 from faunadb.objects import Ref
@@ -36,6 +36,13 @@ def register():
                     "date": datetime.datetime.now(pytz.UTC)
                 }
             }))
+            chat = client.query(q.create(q.collection("chats"), {
+                "data": {
+                    "user_id": user["ref"].id(),
+                    "chat_list": [],
+                    "messages":[],
+                }
+            }))
             flash("Registration successful.")
             return redirect(url_for("login"))
     return render_template("auth.html")
@@ -52,7 +59,8 @@ def login():
            if hashlib.sha512(password.encode()).hexdigest() == user["data"]["password"]:
                session["user"] = {
                    "id": user["ref"].id(),
-                   "username": user["data"]["username"]
+                   "username": user["data"]["username"],
+                   "email":user["data"]["email"]
                }
                return redirect(url_for("chat"))
            else:
@@ -63,10 +71,55 @@ def login():
            return redirect(url_for("login"))
    return render_template("auth.html")
 
+@app.route("/new-chat", methods=["POST"])
+def new_chat():
+    user_id =  session["user"]["id"]
+    new_chat = request.form["email"].strip().lower()
+    #If user is trying to add theirself, do nothing
+    if new_chat == session["user"]["email"]:
+        return redirect(url_for("chat"))
 
+    try:
+        #If user trys to add a chat that has not registerd, do nothing
+
+        new_chat_id = client.query(q.get(q.match(q.index("user_index"),new_chat )))
+    except: 
+        return redirect(url_for("chat"))
+    #Get the chats related to both user
+    chats = client.query(q.get(q.match(q.index("chat_index"),user_id )))
+    recepient_chats = client.query(q.get(q.match(q.index("chat_index"),new_chat_id["ref"].id() )))
+    print(recepient_chats)
+    #Check if the chat the users is trying to add has not been added before
+    try:
+        chat_list = [list(i.values())[0] for i in chats["data"]["chat_list"]]
+    except:
+        chat_list = []
+        
+    if new_chat_id["ref"].id() not in chat_list:
+        #Append the new chat to the chat list of the user
+        room_id = str(int(new_chat_id["ref"].id()) + int(user_id))[-4:]
+        chats["data"]["chat_list"].append( { "user_id":new_chat_id["ref"].id(), "room_id":int(room_id) })
+        recepient_chats["data"]["chat_list"].append( { "user_id":user_id, "room_id":int(room_id) })
+
+        #Update chat list for both users
+        client.query(q.update(
+            q.ref(
+                q.collection("chats"), chats["ref"].id()), 
+                {"data": {
+                    "chat_list":chats["data"]["chat_list"] }}
+                ))
+        client.query(q.update(
+            q.ref(
+                q.collection("chats"), recepient_chats["ref"].id()), 
+                {"data": {
+                    "chat_list":recepient_chats["data"]["chat_list"] }}
+                ))
+
+    return redirect(url_for("chat"))
 @app.route("/chat", methods=["GET","POST"])
 def chat():
-    return render_template("clean_chat.html")
+    chat = client.query(q.get(q.match(q.index("chat_index"), session["user"]["id"] )))
+    return render_template("clean_chat.html" , user_data = session["user"])
 
 @socketio.on("outgoing")
 def handle_my_custom_event(json, methods=["GET", "POST"]):

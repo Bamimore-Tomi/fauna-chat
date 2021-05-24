@@ -189,7 +189,9 @@ img{ max-width:100%;}
 }
 </style>
 <div class="container">
-<h3 class=" text-center">Messaging</h3>
+<h3 class=" text-left"> {{ user_data["username"] }}</h3>
+<h3 class=" text-center">Fauna Chat</h3>
+<h3 class=" text-right">{{ user_data["email"] }}</h3>
 <div class="messaging">
       <div class="inbox_msg">
         <div class="inbox_people">
@@ -207,9 +209,9 @@ img{ max-width:100%;}
             <div class="new_chat">
               <div id="new_chat_overlay"></div>
               <button id="new_chat_btn"><i class="fa fa-plus"></i> New Chat</button>
-              <form id="new_chat_form">
+              <form method="POST" action="{{ url_for('new_chat') }}"  id="new_chat_form">
                 <label for="email"><strong>Email: </strong></label>
-                <input type="email" placeholder="type your email here">
+                <input type="email" name="email" placeholder="type your email here">
                 <input type="submit" value="Submit">
               </form>
             </div>
@@ -374,7 +376,7 @@ img{ max-width:100%;}
             user_name : user_name,
             message : user_input
           } )
-          scrollDown();
+          //scrollDown();
           $('div.msg_history').append(`
             <div class="outgoing_msg">
               <div class="sent_msg">
