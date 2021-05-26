@@ -1,7 +1,7 @@
-import hashlib,os
+import hashlib,os,time
 import datetime, pytz
 from flask import Flask, render_template, request, flash, redirect, url_for, session, Response
-from flask_socketio import SocketIO
+from flask_socketio import SocketIO, join_room
 from faunadb import query as q
 from faunadb.objects import Ref
 from faunadb.client import FaunaClient
@@ -40,7 +40,6 @@ def register():
                 "data": {
                     "user_id": user["ref"].id(),
                     "chat_list": [],
-                    "messages":[],
                 }
             }))
             flash("Registration successful.")
@@ -88,19 +87,18 @@ def new_chat():
     #Get the chats related to both user
     chats = client.query(q.get(q.match(q.index("chat_index"),user_id )))
     recepient_chats = client.query(q.get(q.match(q.index("chat_index"),new_chat_id["ref"].id() )))
-    print(recepient_chats)
     #Check if the chat the users is trying to add has not been added before
     try:
         chat_list = [list(i.values())[0] for i in chats["data"]["chat_list"]]
     except:
         chat_list = []
-        
+
     if new_chat_id["ref"].id() not in chat_list:
         #Append the new chat to the chat list of the user
         room_id = str(int(new_chat_id["ref"].id()) + int(user_id))[-4:]
-        chats["data"]["chat_list"].append( { "user_id":new_chat_id["ref"].id(), "room_id":int(room_id) })
-        recepient_chats["data"]["chat_list"].append( { "user_id":user_id, "room_id":int(room_id) })
-
+        chats["data"]["chat_list"].append( { "user_id":new_chat_id["ref"].id(), "room_id":room_id })
+        recepient_chats["data"]["chat_list"].append( { "user_id":user_id, "room_id":room_id })
+        
         #Update chat list for both users
         client.query(q.update(
             q.ref(
@@ -114,16 +112,65 @@ def new_chat():
                 {"data": {
                     "chat_list":recepient_chats["data"]["chat_list"] }}
                 ))
+        client.query(q.create(q.collection("messages"), {
+                "data": {
+                    "room_id": room_id,
+                    "conversation": []
+                }
+            }))
 
     return redirect(url_for("chat"))
-@app.route("/chat", methods=["GET","POST"])
+
+@app.route("/chat/", methods=["GET","POST"])
 def chat():
-    chat = client.query(q.get(q.match(q.index("chat_index"), session["user"]["id"] )))
-    return render_template("clean_chat.html" , user_data = session["user"])
+    room_id = request.args.get("rid", None) 
+    data = []
+    try:
+        chat_list = client.query(q.get(q.match(q.index("chat_index"), session["user"]["id"] )))["data"]["chat_list"]
+    except:
+        chat_list = []
+    messages = []
+    if room_id!=None:
+        messages = client.query(q.get(q.match(q.index("message_index"),room_id )))["data"]["conversation"]
+
+    print("MESSAGES",messages)
+    for i in chat_list:
+        username = client.query(q.get(q.ref(q.collection("users"), i["user_id"])))["data"]["username"]
+        is_active = False
+        if room_id == i["room_id"]:
+            is_active = True
+        data.append({"username":username, "room_id":i["room_id"],"is_active":is_active })
+    return render_template("clean_chat.html" , user_data = session["user"],room_id=room_id, data=data, messages=messages)
+
+@socketio.on("join-chat")
+def join_private_chat(data):
+    room = data["rid"]
+    join_room(room=room)
+    socketio.emit(
+        "joined-chat",
+        {"msg": f"{room} is now online."},
+        room=room,
+        #include_self=False,
+    )
+
 
 @socketio.on("outgoing")
 def handle_my_custom_event(json, methods=["GET", "POST"]):
-    print("received my event: " + str(json))
-    socketio.emit("message", json)
+    room_id = json["rid"]
+    timestamp = json["timestamp"]
+    message = json["message"]
+    sender_id = json["sender_id"]
+    sender_username = json["sender_username"]
+
+    messages = client.query(q.get(q.match(q.index("message_index"),room_id )))
+    conversation = messages["data"]["conversation"]
+    conversation.append({"timestamp":timestamp,"sender_username":sender_user, "sender_id":sender_id, "message":message})
+    client.query(q.update(
+        q.ref(
+            q.collection("messages"), messages["ref"].id()), 
+            {"data": {
+                "conversation": conversation }}
+            ))
+    socketio.emit("message", json, room= room_id, include_self=False,)
 if __name__ == "__main__":
     socketio.run(app, debug=True)
