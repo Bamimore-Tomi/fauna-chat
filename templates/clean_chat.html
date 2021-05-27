@@ -285,7 +285,7 @@ img{ max-width:100%;}
       }
 
       // YOUR SOCKET CODE
-      var socket = io.connect('http://' + document.domain + ':' + location.port + '/?rid=' + {{ room_id }} );
+      var socket = io.connect('https://' + document.domain + ':' + location.port + '/?rid=' + {{ room_id }} );
 
       socket.on( 'connect', function() {
         socket.emit('join-chat', {
