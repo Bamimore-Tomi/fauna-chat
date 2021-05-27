@@ -16,7 +16,7 @@ socketio = SocketIO(app)
 
 @app.route("/", methods=["GET","POST"])
 def sessions():
-    return render_template("chat.html")
+    return render_template("auth.html")
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
