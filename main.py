@@ -145,7 +145,7 @@ def chat():
     if room_id!=None:
         messages = client.query(q.get(q.match(q.index("message_index"),room_id )))["data"]["conversation"]
         
-    return render_template("clean_chat.html" , user_data = session["user"],room_id=room_id, data=data, messages=messages)
+    return render_template("chat.html" , user_data = session["user"],room_id=room_id, data=data, messages=messages)
 
 @app.template_filter('ftime')
 def ftime(date):
@@ -164,7 +164,7 @@ def join_private_chat(data):
 
 
 @socketio.on("outgoing")
-def handle_my_custom_event(json, methods=["GET", "POST"]):
+def chatting_event(json, methods=["GET", "POST"]):
     room_id = json["rid"]
     timestamp = json["timestamp"]
     message = json["message"]
