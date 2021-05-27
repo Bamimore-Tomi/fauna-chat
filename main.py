@@ -1,4 +1,5 @@
 import hashlib,os,time
+from functools import wraps
 from datetime import datetime
 import pytz
 from flask import Flask, render_template, request, flash, redirect, url_for, session, Response
@@ -14,9 +15,19 @@ app = Flask(__name__, template_folder='templates')
 app.config["SECRET_KEY"] = "vnkdjnfjknfl1232#"
 socketio = SocketIO(app)
 
+def login_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if "user" not in session:
+            return redirect(url_for("login"))
+        return f(*args, **kwargs)
+
+    return decorated
+
 @app.route("/", methods=["GET","POST"])
 def index():
     return redirect(url_for("login"))
+
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method=="POST":
