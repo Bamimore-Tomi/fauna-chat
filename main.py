@@ -129,17 +129,22 @@ def chat():
         chat_list = client.query(q.get(q.match(q.index("chat_index"), session["user"]["id"] )))["data"]["chat_list"]
     except:
         chat_list = []
-    messages = []
-    if room_id!=None:
-        messages = client.query(q.get(q.match(q.index("message_index"),room_id )))["data"]["conversation"]
 
     for i in chat_list:
         username = client.query(q.get(q.ref(q.collection("users"), i["user_id"])))["data"]["username"]
         is_active = False
         if room_id == i["room_id"]:
             is_active = True
-        data.append({"username":username, "room_id":i["room_id"],"is_active":is_active })
-    print(data)
+        try:
+            last_message = client.query(q.get(q.match(q.index("message_index"),i["room_id"] )))["data"]["conversation"][-1]["message"]
+        except:
+            last_message = "This place is empty. No messages ..."
+        data.append({"username":username, "room_id":i["room_id"],"is_active":is_active, "last_message":last_message })
+
+    messages = []
+    if room_id!=None:
+        messages = client.query(q.get(q.match(q.index("message_index"),room_id )))["data"]["conversation"]
+        
     return render_template("clean_chat.html" , user_data = session["user"],room_id=room_id, data=data, messages=messages)
 
 @app.template_filter('ftime')

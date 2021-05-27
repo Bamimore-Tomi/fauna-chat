@@ -223,9 +223,8 @@ img{ max-width:100%;}
               <div class="chat_people">
                 <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>
                 <div class="chat_ib">
-                  <h5>{{ i["username"] }}<span class="chat_date">Dec 25</span></h5>
-                  <p>Test, which is a new approach to have all solutions 
-                    astrology under one roof.</p>
+                  <h5>{{ i["username"] }}</h5>
+                  <p id="last-message">{{ i["last_message"] }}</p>
                 </div>
               </div>
             </div>
@@ -285,7 +284,7 @@ img{ max-width:100%;}
       }
 
       // YOUR SOCKET CODE
-      var socket = io.connect('https://' + document.domain + ':' + location.port + '/?rid=' + {{ room_id }} );
+      var socket = io.connect('http://' + document.domain + ':' + location.port + '/?rid=' + {{ room_id }} );
 
       socket.on( 'connect', function() {
         socket.emit('join-chat', {
@@ -313,11 +312,10 @@ img{ max-width:100%;}
                 <span class="time_date"> 11:01 AM    |    Today</span> </div>
             </div>
           `)
+        document.getElementById("last-message").innerHTML = user_input
           $( 'input.message' ).val( '' ).focus()
         } )
       socket.on( 'message', function( msg ) {
-        console.log(msg )
-        if (typeof msg.outgoing !== true) {
         $('div.msg_history').append( `<div class="incoming_msg">
               <div class="incoming_msg_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>
               <div class="received_msg">
@@ -326,7 +324,8 @@ img{ max-width:100%;}
                   <span class="time_date"> 11:01 AM    |    June 9</span></div>
               </div>
             </div>`)
-            } })
+        document.getElementById("last-message").innerHTML = msg.message
+             })
 
     </script>
     <script>
