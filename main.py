@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 client = FaunaClient(secret=os.getenv("FAUNA_KEY"))
-app = Flask(__name__)
+app = Flask(__name__, template_folder='Templates/')
 app.config["SECRET_KEY"] = "vnkdjnfjknfl1232#"
 socketio = SocketIO(app)
 
