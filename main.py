@@ -15,9 +15,8 @@ app.config["SECRET_KEY"] = "vnkdjnfjknfl1232#"
 socketio = SocketIO(app)
 
 @app.route("/", methods=["GET","POST"])
-def sessions():
-    return render_template("auth.html")
-
+def index():
+    return redirect(url_for("login"))
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method=="POST":
