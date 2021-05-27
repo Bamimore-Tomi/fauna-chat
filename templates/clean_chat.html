@@ -218,23 +218,8 @@ img{ max-width:100%;}
           </div>
           <div class="inbox_chat">
           {% for i in data %}
-
-          {% if i["is_active"]==True %}
-          <a>
-            <div class="chat_list active_chat">
-              <div class="chat_people">
-                <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>
-                <div class="chat_ib">
-                  <h5>{{ i["username"] }}<span class="chat_date">Dec 25</span></h5>
-                  <p>Test, which is a new approach to have all solutions 
-                    astrology under one roof.</p>
-                </div>
-              </div>
-            </div>
-          </a>
-          {% endif %}
           <a href="{{ url_for('chat',rid=i.room_id) }}">
-            <div class="chat_list">
+            <div class="chat_list" id="{{ i.room_id }}">
               <div class="chat_people">
                 <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>
                 <div class="chat_ib">
@@ -252,18 +237,18 @@ img{ max-width:100%;}
           <div class="msg_history">
           {% for j in messages %}
           {% if j["sender_username"]==user_data["username"] %}
-            <div class="outgoing_msg">
+            <div class="outgoing_msg" id="{{ j.timestamp }}">
               <div class="sent_msg">
                 <p>{{ j["message"] }}</p>
-                <span class="time_date"> 11:01 AM    |    June 9</span> </div>
+                <span class="time_date">{{ j["timestamp"] | ftime }}</span> </div>
             </div>          
           {% else %}
-            <div class="incoming_msg">
+            <div class="incoming_msg" id="{{ j.timestamp }}">
               <div class="incoming_msg_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>
               <div class="received_msg">
                 <div class="received_withd_msg">
                   <p>{{ j["message"] }}</p>
-                  <span class="time_date">{{ j["timestamp"] }}</span></div>
+                  <span class="time_date">{{ j["timestamp"] | ftime }}</span></div>
               </div>
             </div>
           {% endif %}
@@ -303,9 +288,6 @@ img{ max-width:100%;}
       var socket = io.connect('http://' + document.domain + ':' + location.port + '/?rid=' + {{ room_id }} );
 
       socket.on( 'connect', function() {
-        socket.emit( 'outgoing', {
-          data: 'User Connected'
-        } )
         socket.emit('join-chat', {
         rid: '{{ room_id }}'
         } )
@@ -317,7 +299,7 @@ img{ max-width:100%;}
           e.preventDefault()
           let user_input = $( 'input.message' ).val()
           socket.emit( 'outgoing', {
-            timestamp : Date.now(),
+            timestamp : Date.now()/1000,
             sender_username : "{{ user_data['username'] }}",
             sender_id : {{ user_data["id"] }},
             message : user_input,

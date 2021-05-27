@@ -1,5 +1,6 @@
 import hashlib,os,time
-import datetime, pytz
+from datetime import datetime
+import pytz
 from flask import Flask, render_template, request, flash, redirect, url_for, session, Response
 from flask_socketio import SocketIO, join_room
 from faunadb import query as q
@@ -33,7 +34,7 @@ def register():
                     "username": username,
                     "email": email,
                     "password": hashlib.sha512(password.encode()).hexdigest(),
-                    "date": datetime.datetime.now(pytz.UTC)
+                    "date": datetime.now(pytz.UTC)
                 }
             }))
             chat = client.query(q.create(q.collection("chats"), {
@@ -133,14 +134,18 @@ def chat():
     if room_id!=None:
         messages = client.query(q.get(q.match(q.index("message_index"),room_id )))["data"]["conversation"]
 
-    print("MESSAGES",messages)
     for i in chat_list:
         username = client.query(q.get(q.ref(q.collection("users"), i["user_id"])))["data"]["username"]
         is_active = False
         if room_id == i["room_id"]:
             is_active = True
         data.append({"username":username, "room_id":i["room_id"],"is_active":is_active })
+    print(data)
     return render_template("clean_chat.html" , user_data = session["user"],room_id=room_id, data=data, messages=messages)
+
+@app.template_filter('ftime')
+def ftime(date):
+    return datetime.fromtimestamp(int(date)).strftime('%m.%d. %H:%M')
 
 @socketio.on("join-chat")
 def join_private_chat(data):
@@ -164,7 +169,7 @@ def handle_my_custom_event(json, methods=["GET", "POST"]):
 
     messages = client.query(q.get(q.match(q.index("message_index"),room_id )))
     conversation = messages["data"]["conversation"]
-    conversation.append({"timestamp":timestamp,"sender_username":sender_user, "sender_id":sender_id, "message":message})
+    conversation.append({"timestamp":timestamp,"sender_username":sender_username, "sender_id":sender_id, "message":message})
     client.query(q.update(
         q.ref(
             q.collection("messages"), messages["ref"].id()), 
