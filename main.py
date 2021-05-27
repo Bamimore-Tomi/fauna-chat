@@ -82,6 +82,7 @@ def login():
    return render_template("auth.html")
 
 @app.route("/new-chat", methods=["POST"])
+@login_required
 def new_chat():
     user_id =  session["user"]["id"]
     new_chat = request.form["email"].strip().lower()
@@ -133,6 +134,7 @@ def new_chat():
     return redirect(url_for("chat"))
 
 @app.route("/chat/", methods=["GET","POST"])
+@login_required
 def chat():
     room_id = request.args.get("rid", None) 
     data = []
