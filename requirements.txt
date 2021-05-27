@@ -4,7 +4,7 @@ chardet==4.0.0
 click==8.0.1
 colorama==0.4.4
 dnspython==1.16.0
-eventlet==0.31.0
+eventlet==0.30.2
 faunadb==4.1.0
 Flask==2.0.1
 Flask-SocketIO==5.0.3
