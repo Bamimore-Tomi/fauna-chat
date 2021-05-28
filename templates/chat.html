@@ -9,6 +9,12 @@
 </head>
 <body>
 <style> 
+.container-header {
+width: 100%;
+display: flex;
+justify-content: space-between;
+align-items: center;
+}
 .container{max-width:1170px; margin:auto;}
 img{ max-width:100%;}
 .inbox_people {
@@ -189,9 +195,11 @@ img{ max-width:100%;}
 }
 </style>
 <div class="container">
+<div class="container-header">
 <h3 class=" text-left"> {{ user_data["username"] }}</h3>
 <h3 class=" text-center">Fauna Chat</h3>
 <h3 class=" text-right">{{ user_data["email"] }}</h3>
+</div>
 <div class="messaging">
       <div class="inbox_msg">
         <div class="inbox_people">

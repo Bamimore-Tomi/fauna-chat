@@ -114,7 +114,7 @@ def login():
 def new_chat():
     user_id = session["user"]["id"]
     new_chat = request.form["email"].strip().lower()
-    # If user is trying to add theirself, do nothing
+    # If user is trying to add their self, do nothing
     if new_chat == session["user"]["email"]:
         return redirect(url_for("chat"))
 
