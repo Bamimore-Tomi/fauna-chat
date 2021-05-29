@@ -353,9 +353,22 @@ img{ max-width:100%;}
       
       // THIS FUNCTION SHOULD SCROLL DOWN AUTOMATICALLY
       //let scrollingElement = (document.scrollingElement || document.body)
+      let msgH, CurrentLen = msgH.length;
+      let validatePosition = () => {
+        if(msgH.length === CurrentLen) {
+          msgH[msgH.length - 1].setAttribute("id", "last_message");
+        } else {
+          msgH[msgH.length - 2].removeAttribute("id");
+          msgH[msgH.length - 1].setAttribute("id", "last_message");
+          CurrentLen++;
+        }
+      }
       let scrollDown = () => {
         //scrollingElement.scrollTop = scrollingElement.scrollHeight;
-        $container.animate({scrollTop: $container[0].scrollHeight }, "slow");
+        //$container.animate({scrollTop: $container[0].scrollHeight }, "slow");
+        msgH = document.querySelectorAll(".msg_history > div");
+        validatePosition();
+        location.href = ".last_message";
       }
 
       // YOUR SOCKET CODE
@@ -374,7 +387,6 @@ img{ max-width:100%;}
             user_name : user_name,
             message : user_input
           } )
-          scrollDown();
           $('div.msg_history').append(`
             <div class="outgoing_msg">
               <div class="sent_msg">
@@ -382,6 +394,7 @@ img{ max-width:100%;}
                 <span class="time_date"> 11:01 AM    |    Today</span> </div>
             </div>
           `)
+          scrollDown();
           $( 'input.message' ).val( '' ).focus()
         } )
       } )
@@ -396,6 +409,7 @@ img{ max-width:100%;}
                   <span class="time_date"> 11:01 AM    |    June 9</span></div>
               </div>
             </div>`)
+            scrollDown();
             } })
 
     </script>
