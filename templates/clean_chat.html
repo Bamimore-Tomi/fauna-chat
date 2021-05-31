@@ -353,22 +353,27 @@ img{ max-width:100%;}
       
       // THIS FUNCTION SHOULD SCROLL DOWN AUTOMATICALLY
       //let scrollingElement = (document.scrollingElement || document.body)
-      let msgH, CurrentLen = msgH.length;
+      let init = () => {
+        let msgH = document.querySelectorAll(".msg_history > div"), CurrentLen = msgH.length;
+      }
+      init();
       let validatePosition = () => {
         if(msgH.length === CurrentLen) {
           msgH[msgH.length - 1].setAttribute("id", "last_message");
-        } else {
-          msgH[msgH.length - 2].removeAttribute("id");
-          msgH[msgH.length - 1].setAttribute("id", "last_message");
-          CurrentLen++;
+          for(var i; i < msgH.length; i++) {
+            if (msgH[i].id === "last_message" && msgH[i] !== msgH.length - 1) {
+              msgH[i].removeAttribute("id");
+              msgH[msgH.length - 1].setAttribute("id", "last_message");
+            }
+          }
         }
       }
       let scrollDown = () => {
         //scrollingElement.scrollTop = scrollingElement.scrollHeight;
         //$container.animate({scrollTop: $container[0].scrollHeight }, "slow");
-        msgH = document.querySelectorAll(".msg_history > div");
         validatePosition();
         location.href = ".last_message";
+        init();
       }
 
       // YOUR SOCKET CODE
