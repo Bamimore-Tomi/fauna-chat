@@ -119,7 +119,7 @@ def new_chat():
         return redirect(url_for("chat"))
 
     try:
-        # If user trys to add a chat that has not registerd, do nothing
+        # If user tries to add a chat that has not registerd, do nothing
 
         new_chat_id = client.query(q.get(q.match(q.index("user_index"), new_chat)))
     except:
