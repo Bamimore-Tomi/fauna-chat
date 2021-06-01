@@ -286,7 +286,7 @@ img{ max-width:100%;}
       // THIS FUNCTION SHOULD SCROLL DOWN AUTOMATICALLY
       //let scrollingElement = (document.scrollingElement || document.body)
       let msgH = document.querySelectorAll(".msg_history > div"), CurrentLen;
-            let init = () => {
+          let init = () => {
         CurrentLen = msgH.length;
       }
       init();
@@ -309,7 +309,7 @@ img{ max-width:100%;}
         init();
       }
       // YOUR SOCKET CODE
-      var socket = io.connect('http://' + document.domain + ':' + location.port + '/?rid=' + {{ room_id }} );
+      var socket = io.connect('https://' + document.domain + ':' + location.port + '/?rid=' + {{ room_id }} );
 
       socket.on( 'connect', function() {
         socket.emit('join-chat', {
