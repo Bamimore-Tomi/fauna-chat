@@ -237,6 +237,7 @@ def ftime(date):
     return datetime.fromtimestamp(int(date)).strftime("%m.%d. %H:%M")
 
 
+# Join-chat event. Emit online message to ther users and join the room
 @socketio.on("join-chat")
 def join_private_chat(data):
     room = data["rid"]
@@ -249,6 +250,7 @@ def join_private_chat(data):
     )
 
 
+# Outgoing event handler
 @socketio.on("outgoing")
 def chatting_event(json, methods=["GET", "POST"]):
     room_id = json["rid"]
@@ -267,12 +269,14 @@ def chatting_event(json, methods=["GET", "POST"]):
             "message": message,
         }
     )
+    # Updated the database with the new message
     client.query(
         q.update(
             q.ref(q.collection("messages"), messages["ref"].id()),
             {"data": {"conversation": conversation}},
         )
     )
+    # Emit the message(s) sent to other users in the room
     socketio.emit(
         "message",
         json,
