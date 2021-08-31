@@ -19,13 +19,14 @@ from faunadb.client import FaunaClient
 from dotenv import load_dotenv
 
 load_dotenv()
-
+# Initialize client connection to database
 client = FaunaClient(secret=os.getenv("FAUNA_KEY"))
 app = Flask(__name__, template_folder="templates")
 app.config["SECRET_KEY"] = "vnkdjnfjknfl1232#"
+# Initialize socketio application
 socketio = SocketIO(app)
 
-
+# Login decorator to ensure user is logged in before accessing certain routes
 def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -36,6 +37,7 @@ def login_required(f):
     return decorated
 
 
+# Index route, this route redirects to login/register page
 @app.route("/", methods=["GET", "POST"])
 def index():
     return redirect(url_for("login"))
