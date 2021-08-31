@@ -43,12 +43,15 @@ def index():
     return redirect(url_for("login"))
 
 
+# Register a new user and hash password
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
+        # To setup validator for email
         email = request.form["email"].strip().lower()
         username = request.form["username"].strip().lower()
         password = request.form["password"]
+        # Make sure no ther user with similar credentials is already registered
         try:
             user = client.query(q.get(q.match(q.index("users_index"), username)))
             flash("User already exists with that username.")
@@ -67,6 +70,7 @@ def register():
                     },
                 )
             )
+            # Create a new chat list for newly registered user
             chat = client.query(
                 q.create(
                     q.collection("chats"),
@@ -86,16 +90,18 @@ def register():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
+        # To add email validator here
         email = request.form["email"].strip().lower()
         password = request.form["password"]
 
         try:
+            # Query the data base for the inputted email address
             user = client.query(q.get(q.match(q.index("user_index"), email)))
-            print(user)
             if (
                 hashlib.sha512(password.encode()).hexdigest()
                 == user["data"]["password"]
             ):
+                # Create new session for newly logged in user
                 session["user"] = {
                     "id": user["ref"].id(),
                     "username": user["data"]["username"],
@@ -105,7 +111,6 @@ def login():
             else:
                 raise Exception()
         except Exception as e:
-            print(e)
             flash("You have supplied invalid login credentials, please try again!")
             return redirect(url_for("login"))
     return render_template("auth.html")
@@ -173,9 +178,12 @@ def new_chat():
 @app.route("/chat/", methods=["GET", "POST"])
 @login_required
 def chat():
+    # Get the room id in the url or set to None
     room_id = request.args.get("rid", None)
+    # Initialize context that contains information about the chat room
     data = []
     try:
+        # Get the chat list for the user in the room i.e all of the people they have a chat histor with on the application
         chat_list = client.query(
             q.get(q.match(q.index("chat_index"), session["user"]["id"]))
         )["data"]["chat_list"]
@@ -183,10 +191,12 @@ def chat():
         chat_list = []
 
     for i in chat_list:
+        # Query the database to get the user name of users in a user's chat list
         username = client.query(q.get(q.ref(q.collection("users"), i["user_id"])))[
             "data"
         ]["username"]
         is_active = False
+        # If the room id in the url is the same with any of the room id in a user's chat list, that room is currently the active room
         if room_id == i["room_id"]:
             is_active = True
         try:
@@ -205,7 +215,7 @@ def chat():
                 "last_message": last_message,
             }
         )
-
+    # Get all the message history in a certian room
     messages = []
     if room_id != None:
         messages = client.query(q.get(q.match(q.index("message_index"), room_id)))[
@@ -221,6 +231,7 @@ def chat():
     )
 
 
+# Custom time filter to be used in the jinja template
 @app.template_filter("ftime")
 def ftime(date):
     return datetime.fromtimestamp(int(date)).strftime("%m.%d. %H:%M")
